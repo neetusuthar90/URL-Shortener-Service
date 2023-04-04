@@ -17,18 +17,21 @@ def generate_short_url(length=7):
 @app.route('/shorten_url', methods=['POST'])
 def shorten_url():
     data = request.get_json()
-    long_url = data.get('long url')
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    long_url = data.get('long_url')
     if long_url:
         short_url = generate_short_url()
         while short_url in url_mapping:
             short_url = generate_short_url()
         url_mapping[short_url] = long_url
-        responce = {
+        response = {
             'short_url': f'http://{request.host}/{short_url}'
         }
-        return jsonify(responce),201
+        return jsonify(response),201
     else:
-        return jsonify({'error':'Invalid url providedxx'}),400
+        return jsonify({'error':'Invalid long url provided'}),400
 
 
 if __name__ == '__main__':
