@@ -1,10 +1,30 @@
 from flask import Flask,request,redirect,jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import string
 import random
 import os
 
 
 app = Flask(__name__)
+
+#app configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysecretpassword@127.0.0.1/my_database'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+#Initialize SQLAlchemy and Migrate
+db = SQLAlchemy(app)
+migrate = Migrate(app,db)
+
+#define a model
+class url_mapping(db.Model):
+    id = db.Column(db.Integer,primary_key=True)
+    long_url = db.Column(db.String(1024),nullable=False)
+    short_url = db.Column(db.String(62),nullable=False,unique=True)
+
+    def __repr__(self):
+        return f'<url_mapping{self.short_url}>'
+
 
 @app.route('/hello', methods=['GET'])
 def hello_world():
@@ -14,7 +34,7 @@ def hello_world():
 #     app.run()
 
 #store short url in memory
-url_mapping = {}
+#url_mapping = {}
 
 #generate short url
 def generate_short_url(length=7):
@@ -32,9 +52,13 @@ def shorten_url():
     long_url = data.get('long_url')
     if long_url:
         short_url = generate_short_url()
-        while short_url in url_mapping:
+        while url_mapping.query.filter_by(short_url=short_url).first() is not None:
             short_url = generate_short_url()
-        url_mapping[short_url] = long_url
+        
+        new_url = url_mapping(long_url=long_url,short_url=short_url)
+        db.session.add(new_url)
+        db.session.commit()
+
         response = {
             'short_url': f'http://{request.host}/{short_url}'
         }
@@ -45,7 +69,7 @@ def shorten_url():
 
 @app.route('/<short_url>',methods=['GET'])
 def redirect_url(short_url):
-    long_url = url_mapping.get(short_url)
+    long_url = url_mapping.query.filter_by(short_url=short_url).first()
     if not long_url:
         return jsonify({"error:":"Short url not found"}),404
     else:
