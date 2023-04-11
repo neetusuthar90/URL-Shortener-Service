@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            URL Shortener
+        </title>
+        <script src="script.js"></script>
+    </head>
+    <body>
+        <h1>
+            URL Shortener
+        </h1>
+        <form>
+            <label for="url-input"> Enter your URL:</label><br>
+            <input type="text" id="url-input" name="url-input"><br>
+            <button type="button" onclick="shortenUrl()">continue</button>
+        </form>
+        <div id="short-url"></div>
+        <script>
+            function shortenUrl(){
+                const longUrl = document.getElementById("url-input").value;
+                fetch("/shorten-url",{
+                    method: "POST",
+                    body: JSON.getElementById({url:longUrl}),
+                    headers:{
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("short-url").innerHTML = data.shortUrl;
+                })
+                .catch(error => console.error(error));
+            }
+        </script>
+    </body>
+</html>
