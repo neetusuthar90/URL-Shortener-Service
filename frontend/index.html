@@ -4,7 +4,6 @@
         <title>
             URL Shortener
         </title>
-        <script src="script.js"></script>
     </head>
     <body>
         <h1>
@@ -15,20 +14,25 @@
             <input type="text" id="url-input" name="url-input"><br>
             <button type="button" onclick="shortenUrl()">continue</button>
         </form>
-        <div id="short-url"></div>
+        <div id="result-container" style="display: none;">
+            <h3>Shortened URL:</h3>
+            <a id="short_url" href="" target="_blank"></a>
+        </div>        
         <script>
             function shortenUrl(){
                 const longUrl = document.getElementById("url-input").value;
-                fetch("/shorten-url",{
+                fetch("http://127.0.0.1:5000/shorten_url",{
                     method: "POST",
-                    body: JSON.getElementById({url:longUrl}),
+                    body: JSON.stringify({long_url:longUrl}),
                     headers:{
                         "Content-Type": "application/json"
                     }
                 })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("short-url").innerHTML = data.shortUrl;
+                    document.getElementById("short_url").innerHTML = data.short_url;
+                    document.getElementById("short_url").href = data.short_url;
+                    document.getElementById("result-container").style.display = "block";
                 })
                 .catch(error => console.error(error));
             }
