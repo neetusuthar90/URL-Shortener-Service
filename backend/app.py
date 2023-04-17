@@ -3,9 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 import string
 import random
 import os
-
+from validators import url
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # app configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysecretpassword@127.0.0.1/my_database'
@@ -34,13 +36,15 @@ def generate_short_url(length=7):
 
 ## Create short URL and store in DB
 @app.route('/shorten_url', methods=['POST'])
+
 def shorten_url():
     data = request.get_json()
     if not data:
         return jsonify({'error': 'No data provided'}), 400
 
     long_url = data.get('long_url')
-    if long_url:
+    print(long_url)
+    if url(long_url):
         record = url_mapping.query.filter_by(long_url=long_url).first()
         if record is None:
             short_url = generate_short_url()
