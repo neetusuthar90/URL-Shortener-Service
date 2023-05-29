@@ -9,8 +9,12 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+# MySQL connection string is read from env var
+connection_string = os.environ['CONNECTION_STRING']
+
+
 # app configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:mysecretpassword@127.0.0.1/my_database'
+app.config['SQLALCHEMY_DATABASE_URI'] =  connection_string
 
 # Initialize SQLAlchemy and Migrate
 db = SQLAlchemy(app)
