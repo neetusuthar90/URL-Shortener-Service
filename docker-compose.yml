@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: backend
+    environment:
+      CONNECTION_STRING: "mysql+pymysql://root:mysecretpassword@mysql-server/my_database"
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql-server
+  mysql-server:
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - "3306:3306"
+    image: "mysql/mysql-server"
+  frontend:
+    build: frontend
+    ports:
+      - "8000:80"
+    depends_on:
+      - backend
