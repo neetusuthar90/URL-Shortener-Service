@@ -5,15 +5,14 @@ import random
 import os
 from validators import url
 from flask_cors import CORS
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
 
 app = Flask(__name__)
 CORS(app)
 
 # MySQL connection string is read from env var
 connection_string = os.environ['CONNECTION_STRING']
-
-
-# app configuration
 app.config['SQLALCHEMY_DATABASE_URI'] =  connection_string
 
 # Initialize SQLAlchemy and Migrate
@@ -25,12 +24,6 @@ class url_mapping(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     long_url = db.Column(db.String(1024), nullable=False)
     short_url = db.Column(db.String(62), nullable=False, unique=True)
-
-# Run this manually to create schema 
-# from app import db,app 
-# with app.app_context():
-#   db.create_all()
-
 
 # generate short url
 def generate_short_url(length=7):
@@ -77,4 +70,9 @@ def redirect_url(short_url):
 
 
 if __name__ == '__main__':
+    from app import db,app 
+    if not database_exists(connection_string):
+        create_database(connection_string)
+        with app.app_context():
+            db.create_all()
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
